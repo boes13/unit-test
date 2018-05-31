@@ -2,16 +2,32 @@ package common
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
-	"fmt"
 )
+
+type DataProviderI interface {
+	GetRedisConnection() redis.Conn
+	GetDBObject() *sql.DB
+}
+
+type DataProviderWrapper struct {
+	DataProvider DataProviderI
+}
+
+type dp struct{}
+
+var dataProviderWrapper DataProviderWrapper
+
 
 var redisPool redis.Pool
 var db *sql.DB
 
 func InitDataConnection() error {
+	dataProviderWrapper = DataProviderWrapper{dp{}}
+
 	// configuration from files
 	redisTimeout := 60
 	redisMaxConn := 30
@@ -38,13 +54,22 @@ func InitDataConnection() error {
 
 	var err error
 	db, err = sql.Open(dbDriver, fmt.Sprintf("%s:%s@/%s", dbUser, dbPassword, dbName))
+
 	return err
 }
 
-func GetRedisConnection() redis.Conn {
+func (dp) GetRedisConnection() redis.Conn {
 	return redisPool.Get()
 }
 
-func GetDBObject() *sql.DB {
+func (dp) GetDBObject() *sql.DB {
 	return db
+}
+
+func GetDataProvider() DataProviderWrapper {
+	return dataProviderWrapper
+}
+
+func SetDataProvider(i DataProviderI) {
+	dataProviderWrapper.DataProvider = i
 }

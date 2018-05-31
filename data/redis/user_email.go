@@ -6,6 +6,6 @@ import (
 )
 
 func GetUserEmail(userID int64) (string, error) {
-	redisCon := common.GetRedisConnection()
+	redisCon := common.GetDataProvider().DataProvider.GetRedisConnection()
 	return redis.String(redisCon.Do("GET", common.GetRedisKeyUser(userID)))
 }

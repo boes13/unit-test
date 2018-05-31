@@ -8,9 +8,9 @@ import (
 )
 
 func GetUserEmail(userID int64) (string, bool, error) {
-	db := common.GetDBObject()
+	dbWrapper := common.GetDataProvider().DataProvider.GetDBObject()
 	query := fmt.Sprintf("select email from user where id=%d", userID)
-	row := db.QueryRow(query)
+	row := dbWrapper.QueryRow(query)
 
 	var email string
 	err := row.Scan(&email)
